@@ -1,0 +1,28 @@
+version: '3.8'  # Версия Docker Compose
+services:
+  # Сервис базы данных (PostgreSQL)
+  db:
+    image: postgres:15-alpine  # Легковесный образ PostgreSQL
+    env_file:
+      - .env                   # Чтение переменных из .env
+    environment:               # Дополнение/переопределение переменных
+      POSTGRES_DB: student_db   # Имя БД
+      POSTGRES_USER: postgres   # Пользователь
+      POSTGRES_PASSWORD: postgres  # Пароль
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Постоянное хранилище данных
+    ports:
+      - "5432:5432"  # Проброс порта хоста 5432 → контейнера 5432
+
+  # Сервис приложения (FastAPI)
+  app:
+    build: .         # Сборка образа из текущей директории (Dockerfile)
+    ports:
+      - "8000:80"    # Проброс порта хоста 8000 → контейнера 80
+    depends_on:
+      - db           # Зависимость от сервиса db (запуск db первым)
+    env_file:
+      - .env         # Загрузка переменных окружения
+
+volumes:
+  postgres_data:  # Объявление тома для хранения данных БД
